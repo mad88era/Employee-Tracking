@@ -25,7 +25,6 @@ THEN I am prompted to enter the employee’s first name, last name, role, and ma
 WHEN I choose to update an employee role
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
-
 ## Resources
 https://coding-boot-camp.github.io/full-stack/computer-literacy/video-submission-guide
 
@@ -34,7 +33,7 @@ https://www.npmjs.com/package/mysql2
 
 
 ## Links
-Github Repository: https://github.com/mad88era/dancing-chairs
+Github Repository: https://github.com/mad88era/Employee-Tracking
 
-Google Drive link for Video: https://drive.google.com/file/d/1JbdnEf9mkyHI2HyMeb-YHm6H5sIMSHpE/view 
+Google Drive link for Video: https://drive.google.com/file/d/15YuQFQjxefHg7r0bdi554cr8GjaA6S5g/view
 

@@ -1,4 +1,3 @@
-// Import and require packages
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const fs = require('fs');
@@ -40,7 +39,7 @@ function employeeManager() {
                 viewAllRoles();
                 break;
             case 'View all employees':
-                viewAllEmployees();
+                viewAllEmployeesFromSeeds(); // Updated function call
                 break;
             case 'Add a department':
                 addDepartment();
@@ -53,7 +52,7 @@ function employeeManager() {
                 break;
             case 'Update an employee':
                 updateEmployeeRole();
-                break; // Add break statement here
+                break;
             case 'Exit':
                 console.log('Have a good day. Goodbye.');
                 process.exit(0);
@@ -65,12 +64,12 @@ function employeeManager() {
 
 // Function to view list of all departments in a table
 function viewAllDepartments() {
-    db.query('SELECT * FROM department', (error, results) => {
+    db.query('SELECT id, department_name FROM department', (error, results) => {
         if (error) {
-            console.error('Error:', error);
+            console.error('Error fetching departments:', error);
             return;
         }
-        console.table(results);
+        console.table(results, ['id', 'department_name']);
         employeeManager();
     });
 }
@@ -86,30 +85,39 @@ function viewAllRoles() {
         employeeManager();
     });
 }
+
+// Function to view list of all employees from the seeds.sql file
+function viewAllEmployeesFromSeeds() {
+    db.query('SELECT * FROM employee', (error, results) => {
+        if (error) {
+            console.error('Error fetching employees:', error);
+            return;
+        }
+        console.table(results);
+        employeeManager();
+    });
+}
+
+
 // Function to view list of all employees including their title, salary, and manager
 function viewAllEmployees() {
+    // Read the SQL query from the query.sql file & execute the query
     fs.readFile('db/query.sql', 'utf8', (error, data) => {
         if (error) {
             console.error('Error reading query.sql:', error);
+            employeeManager();
             return;
         }
         db.query(data, (error, results) => {
             if (error) {
-                console.error('Error executing SQL query:', error);
+                console.error('Error executing query:', error);
                 return;
             }
-            if (results.length === 0) {
-                console.log('No employees found.');
-            } else {
-                console.table(results);
-            }
+            console.table(results);
             employeeManager();
         });
     });
 }
-// Runs the function & initialize the employee manager/database
-employeeManager();
-
 // Function to add a department using inquirer to prompt user to enter details
 function addDepartment() {
     inquirer.prompt({
@@ -170,7 +178,8 @@ function addRole() {
             });
         });
     });
-}
+};
+
 // Function to add an employee using inquirer to prompt user to enter employee details
 function addEmployee() {
     inquirer.prompt([
@@ -185,17 +194,27 @@ function addEmployee() {
             message: 'Enter the last name of the employee:'
         },
         {
-            name: 'departmentName',
-        type: 'input',
-        message: 'Enter the department for employee:'
+            name: 'roleId',
+            type: 'number',
+            message: 'Enter the role ID of the employee:'
         },
         {
-            name: 'salary',
+            name: 'managerId',
             type: 'number',
-            message: 'Enter the salary for the employee:'
+            message: 'Enter the manager ID of the employee (optional, leave empty if none):',
+            default: null, // Default value if user leaves it empty
+            validate: function (input) {
+                // Validate if the input is a number or empty
+                if (input === '') return true; // Allow empty input
+                if (!Number.isInteger(Number(input))) {
+                    return 'Please enter a valid number or leave it empty.';
+                }
+                return true;
+            }
         }
     ]).then(answers => {
-        db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [answers.firstName, answers.lastName, answers.roleId, answers.managerId], (error, result) => {
+        const { firstName, lastName, roleId, managerId } = answers;
+        db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [firstName, lastName, roleId, managerId], (error, result) => {
             if (error) {
                 console.error('Error adding employee:', error);
                 return;
@@ -204,4 +223,10 @@ function addEmployee() {
             employeeManager();
         });
     });
-}
+};
+
+
+// Runs the function & initialize the employee manager/database
+employeeManager();
+
+// Add other functions (addDepartment, addRole, etc.) as needed...
